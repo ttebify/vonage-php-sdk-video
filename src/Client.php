@@ -7,6 +7,7 @@ use Vonage\Client\APIClient;
 use Nexmo\JWT\TokenGenerator;
 use Vonage\Client\APIResource;
 use Vonage\Client\Credentials\Keypair;
+use Vonage\Client\Credentials\Container;
 use Vonage\Client\Credentials\CredentialsInterface;
 
 class Client implements APIClient
@@ -52,25 +53,13 @@ class Client implements APIClient
         return $session;
     }
 
-    public function generateClientToken(string $sessionId, array $options = []): string
+    public function generateClientToken(string $sessionId): string
     {
-        // unpack optional arguments (merging with default values) into named variables
-        $defaults = array(
-            'role' => Role::PUBLISHER,
-            'expireTime' => null,
-            'data' => null,
-            'initialLayoutClassList' => [],
-        );
-        $options = array_merge($defaults, array_intersect_key($options, $defaults));
-        list($role, $expireTime, $data, $initialLayoutClassList) = array_values($options);
-
         /** @var Keypair $credentials */
         $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
         $token = TokenGenerator::factory($credentials->application, $credentials->key, [
-            'role' => $role,
-            'connection_data' => $data,
-            'initial_layout_class_list' => $initialLayoutClassList,
-            'session_id' => $sessionId
+            'scope' => 'session.connect',
+            'session_id' => $sessionId,
         ]);
 
         return $token;
