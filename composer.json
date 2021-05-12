@@ -4,7 +4,7 @@
     "type": "library",
     "require": {
         "vonage/client-core": "enhancements/fixes-for-video-dev@dev",
-        "vonage/jwt": "^0.2.0"
+        "vonage/jwt": "^0.3.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.84",
