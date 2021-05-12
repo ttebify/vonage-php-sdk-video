@@ -3,8 +3,8 @@
     "description": "Client package for the Vonage Video API Server operations",
     "type": "library",
     "require": {
-        "vonage/client-core": "^2.8",
-        "nexmo/jwt": "^0.1.0"
+        "vonage/client-core": "enhancements/fixes-for-video-dev@dev",
+        "vonage/jwt": "^0.2.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^0.12.84",

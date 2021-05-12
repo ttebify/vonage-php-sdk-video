@@ -12,7 +12,8 @@ class ClientFactory
     public function __invoke(MapFactory $containerInterface): Client
     {
         $apiResource = $containerInterface->make(APIResource::class);
-        $apiResource->setBaseUri('/video');
+        $apiResource->setBaseUrl('https://anvil-tbdev.opentok.com');
+        $apiResource->setBaseUri('/');
         $apiResource->setAuthHandler(new KeypairHandler());
 
         return new Client($apiResource);

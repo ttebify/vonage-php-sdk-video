@@ -35,7 +35,8 @@ class Client implements APIClient
                 'archiveMode' => $archiveMode,
                 'location' => $location
             ],
-            '/session/create'
+            '/session/create',
+            ['Accept' => 'application/json']
         );
 
         $data = json_decode($response, true);
