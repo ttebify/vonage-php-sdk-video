@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Vonage\Video;
 
 use Vonage\Client\APIClient;
-use Nexmo\JWT\TokenGenerator;
+use Vonage\JWT\TokenGenerator;
 use Vonage\Client\APIResource;
 use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Credentials\Container;
