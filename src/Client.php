@@ -109,6 +109,7 @@ class Client implements APIClient
         $hydrator = new ConstructorHydrator();
         $hydrator->setPrototype(Archive::class);
         $response->setHydrator($hydrator);
+        $response->setNaiveCount(true);
 
         return $response;
     }

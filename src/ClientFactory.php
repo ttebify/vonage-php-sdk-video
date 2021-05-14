@@ -19,6 +19,7 @@ class ClientFactory
         $apiResource->setIsHAL(false);
         $apiResource->setAuthHandler(new KeypairHandler());
         $apiResource->setCollectionPrototype(new IterableAPICollection());
+        $apiResource->setCollectionName('items');
 
         return new Client($apiResource);
     }
