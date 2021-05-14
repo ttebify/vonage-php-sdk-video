@@ -97,10 +97,9 @@ class Client implements APIClient
         return new Archive($response);
     }
 
-    public function listArchives($sessionId, FilterInterface $filter = null): IterableAPICollection
+    public function listArchives(FilterInterface $filter = null): IterableAPICollection
     {
         $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
-        $data['sessionId'] = $sessionId;
         $response = $this->apiResource->search(
             $filter,
             '/v2/project/' . $credentials->application . '/archive'
