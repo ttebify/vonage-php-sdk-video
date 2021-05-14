@@ -1,0 +1,63 @@
+<?php
+declare(strict_types=1);
+
+namespace Vonage\Video\Entity;
+
+use Laminas\Diactoros\Request;
+use Vonage\Entity\IterableAPICollection as EntityIterableAPICollection;
+
+class IterableAPICollection extends EntityIterableAPICollection
+{
+    protected $offset = 0;
+    protected $count = 50;
+
+    protected function fetchPage($absoluteUri): void
+    {
+        //use filter if no query provided
+        if (false === strpos($absoluteUri, '?')) {
+            $query = [];
+
+            if (isset($this->filter)) {
+                $query = array_merge($this->filter->getQuery(), $query);
+            }
+
+            $query['offset'] = $query['offset'] ?? $this->offset;
+            $query['count'] = $query['count'] ?? $this->count;
+
+            $absoluteUri .= '?' . http_build_query($query);
+        }
+
+        $requestUri = $absoluteUri;
+
+        if (filter_var($absoluteUri, FILTER_VALIDATE_URL) === false) {
+            $requestUri = $this->getApiResource()->getBaseUrl() . $absoluteUri;
+        }
+
+        $cacheKey = md5($requestUri);
+        if (array_key_exists($cacheKey, $this->cache)) {
+            $this->page = $this->cache[$cacheKey];
+
+            return;
+        }
+
+        $request = new Request($requestUri, 'GET');
+        $response = $this->client->send($request);
+
+        $this->getApiResource()->setLastRequest($request);
+        $this->response = $response;
+        $this->getApiResource()->setLastResponse($response);
+
+        $body = $this->response->getBody()->getContents();
+        $json = json_decode($body, true);
+        $this->cache[md5($requestUri)] = $json;
+        $this->page = $json;
+
+        if ($this->page) {
+            $this->offset += count($this->page['items']);
+        }
+
+        if ((int)$response->getStatusCode() !== 200) {
+            throw $this->getException($response);
+        }
+    }
+}

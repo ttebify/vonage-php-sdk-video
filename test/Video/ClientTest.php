@@ -14,6 +14,7 @@ use Psr\Http\Message\RequestInterface;
 use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Exception\Request;
 use Vonage\Video\ArchiveMode;
+use Vonage\Video\Entity\IterableAPICollection;
 use Vonage\Video\MediaMode;
 
 class ClientTest extends TestCase
@@ -56,6 +57,9 @@ class ClientTest extends TestCase
         $this->apiResource
             ->setBaseUri('/')
             ->setClient($this->vonageClient->reveal())
+            ->setIsHAL(false)
+            ->setCollectionName('items')
+            ->setCollectionPrototype(new IterableAPICollection())
         ;
 
         $this->client = new Client($this->apiResource);
@@ -241,13 +245,14 @@ class ClientTest extends TestCase
             $this->assertSame('GET', $request->getMethod());
 
             return true;
-        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('list-archives'));
+        }))->shouldBeCalledTimes(2)->willReturn($this->getResponse('list-archives'), $this->getResponse('empty'));
 
         $expected = json_decode($this->getResponse('list-archives')->getBody()->getContents(), true);
-        $archives = $this->client->getArchives($this->sessionId);
+        $archives = $this->client->listArchives();
 
         $this->assertCount(2, $archives);
-        foreach ($archives as $key => $archive) {
+        $key = 0;
+        foreach ($archives as $archive) {
             $this->assertSame($expected['items'][$key]['id'], $archive->getId());
             $this->assertSame($expected['items'][$key]['status'], $archive->getStatus());
             $this->assertSame($expected['items'][$key]['name'], $archive->getName());
@@ -266,6 +271,7 @@ class ClientTest extends TestCase
             $this->assertSame($expected['items'][$key]['resolution'], $archive->getResolution());
             $this->assertSame($expected['items'][$key]['event'], $archive->getEvent());
             $this->assertSame($expected['items'][$key]['url'], $archive->getUrl());
+            $key++;
         }
     }
 
