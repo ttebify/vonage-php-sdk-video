@@ -110,6 +110,7 @@ class Client implements APIClient
         $hydrator->setPrototype(Archive::class);
         $response->setHydrator($hydrator);
         $response->setNaiveCount(true);
+        $response->getApiResource()->setCollectionName('items');
 
         return $response;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Vonage\Video\Entity;
 
 use Laminas\Diactoros\Request;
+use Vonage\Entity\Filter\KeyValueFilter;
 use Vonage\Entity\IterableAPICollection as EntityIterableAPICollection;
 
 class IterableAPICollection extends EntityIterableAPICollection
@@ -54,6 +55,10 @@ class IterableAPICollection extends EntityIterableAPICollection
 
         if ($this->page) {
             $this->offset += count($this->page['items']);
+            $filterQuery = $this->filter->getQuery();
+            $filterQuery['offset'] = $this->offset;
+            $filterQuery['count'] = $this->count;
+            $this->setFilter(new KeyValueFilter($filterQuery));
         }
 
         if ((int)$response->getStatusCode() !== 200) {
