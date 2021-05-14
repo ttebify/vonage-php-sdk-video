@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Vonage\Video\Archive;
 
-class Archive
+class Archive implements \JsonSerializable
 {
     /**
      * Application the archive is associated with
@@ -223,5 +223,34 @@ class Archive
     public function getUrl(): ?string
     {
         return $this->url;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'status' => $this->status,
+            'name' => $this->name,
+            'reason' => $this->reason,
+            'sessionId' => $this->sessionId,
+            'applicationId' => $this->applicationId,
+            'createdAt' => $this->createdAt,
+            'size' => $this->size,
+            'duration' => $this->duration,
+            'outputMode' => $this->outputMode,
+            'hasAudio' => $this->hasAudio,
+            'hasVideo' => $this->hasVideo,
+            'sha256sum' => $this->sha256sum,
+            'password' => $this->password,
+            'updatedAt' => $this->updatedAt,
+            'resolution' => $this->resolution,
+            'event' => $this->event,
+            'url' => $this->url,
+        ];
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->toArray();
     }
 }
