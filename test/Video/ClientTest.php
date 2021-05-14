@@ -12,6 +12,7 @@ use VonageTest\Psr7AssertionTrait;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\RequestInterface;
 use Vonage\Client\Credentials\Keypair;
+use Vonage\Client\Exception\Request;
 use Vonage\Video\ArchiveMode;
 use Vonage\Video\MediaMode;
 
@@ -42,9 +43,6 @@ class ClientTest extends TestCase
      */
     protected $sessionId = '2_999999999999999-MTYxODg4MTU5NjY3N35QY1VEUUl4MVhldEdKU2JCOWlyR2lHY3p-UH4';
 
-    /**
-     * @var VonageClient
-     */
     protected $vonageClient;
 
     public function setUp(): void
@@ -111,6 +109,164 @@ class ClientTest extends TestCase
         }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('empty'));
 
         $this->client->sendSignal($sessionId, 'car', 'sedan', $connectionId);
+    }
+
+    public function testCanStartArchive()
+    {
+        $sessionId = $this->sessionId;
+        $applicationId = $this->applicationId;
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('archive-start'));
+
+        $expected = json_decode($this->getResponse('archive-start')->getBody()->getContents(), true);
+        $archive = $this->client->startArchive($sessionId, []);
+
+        $this->assertSame($expected['id'], $archive->getId());
+        $this->assertSame($expected['status'], $archive->getStatus());
+        $this->assertSame($expected['name'], $archive->getName());
+        $this->assertSame($expected['reason'], $archive->getReason());
+        $this->assertSame($expected['sessionId'], $archive->getSessionId());
+        $this->assertSame($expected['applicationId'], $archive->getApplicationId());
+        $this->assertSame($expected['createdAt'], $archive->getCreatedAt());
+        $this->assertSame($expected['size'], $archive->getSize());
+        $this->assertSame($expected['duration'], $archive->getDuration());
+        $this->assertSame($expected['outputMode'], $archive->getOutputMode());
+        $this->assertSame($expected['hasAudio'], $archive->getHasAudio());
+        $this->assertSame($expected['hasVideo'], $archive->getHasVideo());
+        $this->assertSame($expected['sha256sum'], $archive->getSha256Sum());
+        $this->assertSame($expected['password'], $archive->getPassword());
+        $this->assertSame($expected['updatedAt'], $archive->getUpdatedAt());
+        $this->assertSame($expected['resolution'], $archive->getResolution());
+        $this->assertSame($expected['event'], $archive->getEvent());
+        $this->assertSame($expected['url'], $archive->getUrl());
+    }
+
+    public function testHandlesStartingArchiveOnceArchiveIsAlreadyStarted()
+    {
+        $this->expectException(Request::class);
+        $this->expectExceptionMessage('HTTP 409 Conflict');
+
+        $applicationId = $this->applicationId;
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('archive-start-conflict', 409));
+        $archive = $this->client->startArchive($this->sessionId, []);
+    }
+
+    public function testCanStopArchive()
+    {
+        $archiveId = '506efa9e-7849-410e-bf76-dafd80b1d94e';
+        $applicationId = $this->applicationId;
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $archiveId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive/' . $archiveId . '/stop', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('archive-stop'));
+
+        $expected = json_decode($this->getResponse('archive-stop')->getBody()->getContents(), true);
+        $archive = $this->client->stopArchive($archiveId);
+
+        $this->assertSame($expected['id'], $archive->getId());
+        $this->assertSame($expected['status'], $archive->getStatus());
+        $this->assertSame($expected['name'], $archive->getName());
+        $this->assertSame($expected['reason'], $archive->getReason());
+        $this->assertSame($expected['sessionId'], $archive->getSessionId());
+        $this->assertSame($expected['applicationId'], $archive->getApplicationId());
+        $this->assertSame($expected['createdAt'], $archive->getCreatedAt());
+        $this->assertSame($expected['size'], $archive->getSize());
+        $this->assertSame($expected['duration'], $archive->getDuration());
+        $this->assertSame($expected['outputMode'], $archive->getOutputMode());
+        $this->assertSame($expected['hasAudio'], $archive->getHasAudio());
+        $this->assertSame($expected['hasVideo'], $archive->getHasVideo());
+        $this->assertSame($expected['sha256sum'], $archive->getSha256Sum());
+        $this->assertSame($expected['password'], $archive->getPassword());
+        $this->assertSame($expected['updatedAt'], $archive->getUpdatedAt());
+        $this->assertSame($expected['resolution'], $archive->getResolution());
+        $this->assertSame($expected['event'], $archive->getEvent());
+        $this->assertSame($expected['url'], $archive->getUrl());
+    }
+
+    public function testCanGetArchive()
+    {
+        $archiveId = '506efa9e-7849-410e-bf76-dafd80b1d94e';
+        $applicationId = $this->applicationId;
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $archiveId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive/' . $archiveId, $request->getUri()->getPath());
+            $this->assertSame('GET', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('get-archive'));
+
+        $expected = json_decode($this->getResponse('get-archive')->getBody()->getContents(), true);
+        $archive = $this->client->getArchive($archiveId);
+
+        $this->assertSame($expected['id'], $archive->getId());
+        $this->assertSame($expected['status'], $archive->getStatus());
+        $this->assertSame($expected['name'], $archive->getName());
+        $this->assertSame($expected['reason'], $archive->getReason());
+        $this->assertSame($expected['sessionId'], $archive->getSessionId());
+        $this->assertSame($expected['applicationId'], $archive->getApplicationId());
+        $this->assertSame($expected['createdAt'], $archive->getCreatedAt());
+        $this->assertSame($expected['size'], $archive->getSize());
+        $this->assertSame($expected['duration'], $archive->getDuration());
+        $this->assertSame($expected['outputMode'], $archive->getOutputMode());
+        $this->assertSame($expected['hasAudio'], $archive->getHasAudio());
+        $this->assertSame($expected['hasVideo'], $archive->getHasVideo());
+        $this->assertSame($expected['sha256sum'], $archive->getSha256Sum());
+        $this->assertSame($expected['password'], $archive->getPassword());
+        $this->assertSame($expected['updatedAt'], $archive->getUpdatedAt());
+        $this->assertSame($expected['resolution'], $archive->getResolution());
+        $this->assertSame($expected['event'], $archive->getEvent());
+        $this->assertSame($expected['url'], $archive->getUrl());
+    }
+
+    public function testCanGetAllArchives()
+    {
+        $applicationId = $this->applicationId;
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive', $request->getUri()->getPath());
+            $this->assertSame('GET', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('list-archives'));
+
+        $expected = json_decode($this->getResponse('list-archives')->getBody()->getContents(), true);
+        $archives = $this->client->getArchives($this->sessionId);
+
+        $this->assertCount(2, $archives);
+        foreach ($archives as $key => $archive) {
+            $this->assertSame($expected['items'][$key]['id'], $archive->getId());
+            $this->assertSame($expected['items'][$key]['status'], $archive->getStatus());
+            $this->assertSame($expected['items'][$key]['name'], $archive->getName());
+            $this->assertSame($expected['items'][$key]['reason'], $archive->getReason());
+            $this->assertSame($expected['items'][$key]['sessionId'], $archive->getSessionId());
+            $this->assertSame($expected['items'][$key]['applicationId'], $archive->getApplicationId());
+            $this->assertSame($expected['items'][$key]['createdAt'], $archive->getCreatedAt());
+            $this->assertSame($expected['items'][$key]['size'], $archive->getSize());
+            $this->assertSame($expected['items'][$key]['duration'], $archive->getDuration());
+            $this->assertSame($expected['items'][$key]['outputMode'], $archive->getOutputMode());
+            $this->assertSame($expected['items'][$key]['hasAudio'], $archive->getHasAudio());
+            $this->assertSame($expected['items'][$key]['hasVideo'], $archive->getHasVideo());
+            $this->assertSame($expected['items'][$key]['sha256sum'], $archive->getSha256Sum());
+            $this->assertSame($expected['items'][$key]['password'], $archive->getPassword());
+            $this->assertSame($expected['items'][$key]['updatedAt'], $archive->getUpdatedAt());
+            $this->assertSame($expected['items'][$key]['resolution'], $archive->getResolution());
+            $this->assertSame($expected['items'][$key]['event'], $archive->getEvent());
+            $this->assertSame($expected['items'][$key]['url'], $archive->getUrl());
+        }
     }
 
     protected function getResponse(string $type = 'success', int $status = 200): Response
