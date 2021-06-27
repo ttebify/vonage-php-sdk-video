@@ -113,6 +113,9 @@ class Archive implements \JsonSerializable
      */
     protected $url;
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __construct(array $data = [])
     {
         $this->id = $data['id'];
@@ -135,7 +138,7 @@ class Archive implements \JsonSerializable
         $this->url = $data['url'];
     }
 
-    public function getApplicationId()
+    public function getApplicationId(): string
     {
         return $this->applicationId;
     }
@@ -225,6 +228,9 @@ class Archive implements \JsonSerializable
         return $this->url;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

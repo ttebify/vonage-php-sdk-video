@@ -9,7 +9,14 @@ use Vonage\Entity\IterableAPICollection as EntityIterableAPICollection;
 
 class IterableAPICollection extends EntityIterableAPICollection
 {
+    /**
+     * @var int
+     */
     protected $offset = 0;
+
+    /**
+     * @var int
+     */
     protected $count = 50;
 
     protected function fetchPage($absoluteUri): void

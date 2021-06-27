@@ -3,19 +3,18 @@ declare(strict_types=1);
 
 namespace Vonage\Video;
 
-use Psr\Http\Message\ResponseInterface;
-use SebastianBergmann\Type\IterableType;
 use Vonage\Client\APIClient;
-use Vonage\JWT\TokenGenerator;
 use Vonage\Client\APIResource;
+use Vonage\JWT\TokenGenerator;
+use Vonage\Video\Archive\Archive;
+use Vonage\Video\Archive\ArchiveMode;
 use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Credentials\Container;
-use Vonage\Client\Credentials\CredentialsInterface;
+use Vonage\Entity\IterableAPICollection;
 use Vonage\Entity\Filter\FilterInterface;
 use Vonage\Entity\Hydrator\ConstructorHydrator;
-use Vonage\Entity\IterableAPICollection;
-use Vonage\Video\Archive\Archive;
-use Vonage\Video\ArchiveTest\ArchiveObject;
+use Vonage\Client\Credentials\CredentialsInterface;
+use Vonage\Video\Archive\ArchiveConfig;
 
 class Client implements APIClient
 {
@@ -24,9 +23,15 @@ class Client implements APIClient
      */
     protected $apiResource;
 
+    /**
+     * @var Keypair
+     */
+    protected $credentials;
+
     public function __construct(APIResource $apiResource)
     {
         $this->apiResource = $apiResource;
+        $this->credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
     }
 
     public function getAPIResource(): APIResource
@@ -79,9 +84,7 @@ class Client implements APIClient
 
     public function generateClientToken(string $sessionId): string
     {
-        /** @var Keypair $credentials */
-        $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
-        $token = TokenGenerator::factory($credentials->application, $credentials->key, [
+        $token = TokenGenerator::factory($this->credentials->application, $this->credentials->key, [
             'scope' => 'session.connect',
             'session_id' => $sessionId,
         ]);
@@ -91,20 +94,18 @@ class Client implements APIClient
 
     public function getArchive(string $archiveId): Archive
     {
-        $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
-        $response = $this->apiResource->get('v2/project/' . $credentials->application . '/archive/' . $archiveId);
+        $response = $this->apiResource->get('v2/project/' . $this->credentials->application . '/archive/' . $archiveId);
 
         return new Archive($response);
     }
 
     public function listArchives(FilterInterface $filter = null): IterableAPICollection
     {
-        $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
         $response = $this->apiResource->search(
             $filter,
-            '/v2/project/' . $credentials->application . '/archive'
+            '/v2/project/' . $this->credentials->application . '/archive'
         );
-        $response->getApiResource()->setBaseUri('/v2/project/' . $credentials->application . '/archive');
+        $response->getApiResource()->setBaseUri('/v2/project/' . $this->credentials->application . '/archive');
 
         $hydrator = new ConstructorHydrator();
         $hydrator->setPrototype(Archive::class);
@@ -117,10 +118,9 @@ class Client implements APIClient
 
     public function sendSignal(string $sessionId, string $type, $data, string $connectionId = null): void
     {
-        $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
-        $url = '/v2/project/' . $credentials->application . '/session/' . $sessionId . '/signal';
+        $url = '/v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/signal';
         if ($connectionId) {
-            $url = '/v2/project/' . $credentials->application . '/session/' . $sessionId . '/connection/' . $connectionId . '/signal';
+            $url = '/v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/connection/' . $connectionId . '/signal';
         }
 
         $this->apiResource->create(
@@ -129,13 +129,11 @@ class Client implements APIClient
         );
     }
 
-    public function startArchive($sessionId, $data): Archive
+    public function startArchive(ArchiveConfig $data): Archive
     {
-        $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
-        $data['sessionId'] = $sessionId;
         $response = $this->apiResource->create(
-            $data,
-            '/v2/project/' . $credentials->application . '/archive'
+            $data->toArray(),
+            '/v2/project/' . $this->credentials->application . '/archive'
         );
 
         return new Archive($response);
@@ -143,10 +141,9 @@ class Client implements APIClient
 
     public function stopArchive(string $archiveId): Archive
     {
-        $credentials = $this->extractCredentials(Keypair::class, $this->getAPIResource()->getClient()->getCredentials());
         $response = $this->apiResource->create(
             [],
-            '/v2/project/' . $credentials->application . '/archive/' . $archiveId . '/stop'
+            '/v2/project/' . $this->credentials->application . '/archive/' . $archiveId . '/stop'
         );
 
         return new Archive($response);

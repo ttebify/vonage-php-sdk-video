@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Vonage\Video;
+namespace Vonage\Video\Archive;
 
 class ArchiveMode
 {

@@ -13,7 +13,8 @@ use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\RequestInterface;
 use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Exception\Request;
-use Vonage\Video\ArchiveMode;
+use Vonage\Video\Archive\ArchiveConfig;
+use Vonage\Video\Archive\ArchiveMode;
 use Vonage\Video\Entity\IterableAPICollection;
 use Vonage\Video\MediaMode;
 
@@ -128,7 +129,7 @@ class ClientTest extends TestCase
         }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('archive-start'));
 
         $expected = json_decode($this->getResponse('archive-start')->getBody()->getContents(), true);
-        $archive = $this->client->startArchive($sessionId, []);
+        $archive = $this->client->startArchive(new ArchiveConfig($sessionId));
 
         $this->assertSame($expected['id'], $archive->getId());
         $this->assertSame($expected['status'], $archive->getStatus());
@@ -163,7 +164,7 @@ class ClientTest extends TestCase
 
             return true;
         }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('archive-start-conflict', 409));
-        $archive = $this->client->startArchive($this->sessionId, []);
+        $archive = $this->client->startArchive(new ArchiveConfig($this->sessionId));
     }
 
     public function testCanStopArchive()
