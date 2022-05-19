@@ -170,6 +170,22 @@ class ClientTest extends TestCase
         $archive = $this->client->startArchive(new ArchiveConfig($this->sessionId));
     }
 
+    public function testHandlesNoClientsConnectedErrorWhenStartingArchive()
+    {
+        $this->expectException(Request::class);
+        $this->expectExceptionMessage('Unexpected error');
+
+        $applicationId = $this->applicationId;
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('archive-start-no-clients', 404));
+        $archive = $this->client->startArchive($this->sessionId, []);
+    }
+
     public function testCanStopArchive()
     {
         $archiveId = '506efa9e-7849-410e-bf76-dafd80b1d94e';
