@@ -39,29 +39,32 @@ class Client implements APIClient
         return $this->apiResource;
     }
 
-    public function createSession(string $mediaMode = MediaMode::RELAYED, string $archiveMode = ArchiveMode::MANUAL, ?string $location = null): Session
+    public function createSession(?SessionOptions $options = null): Session
     {
+        if (!$options) {
+            $options = new SessionOptions();
+        }
+
+        $data = [
+            'mediaMode' => $options->getMediaMode(),
+            'archiveMode' => $options->getArchiveMode(),
+        ];
+
+        if ($options->getLocation()) {
+            $data['location'] = $options->getLocation();
+        }
+        
         $response = $this->apiResource->submit(
-            [
-                'mediaMode' => $mediaMode,
-                'archiveMode' => $archiveMode,
-                'location' => $location
-            ],
+            $data,
             '/session/create',
             ['Accept' => 'application/json']
         );
 
-        $data = json_decode($response, true);
-        $data = array_merge(
-            $data[0],
-            [
-                'mediaMode' => $mediaMode,
-                'archiveMode' => $archiveMode,
-                'location' => $location
-            ]
-        );
+        $responseData = json_decode($response, true);
+        $responseData = array_merge($responseData[0], $data);
+
         $session = new Session();
-        $session->fromArray($data);
+        $session->fromArray($responseData);
 
         return $session;
     }

@@ -24,7 +24,7 @@ class Session implements ArrayHydrateInterface
 
     public function getLocation(): ?string
     {
-        return $this->data['location'];
+        return $this->data['location'] ?? null;
     }
 
     public function getMediaMode(): string
