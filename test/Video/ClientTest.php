@@ -6,6 +6,7 @@ use Prophecy\Argument;
 use Vonage\Video\Client;
 use Vonage\Client\APIResource;
 use Laminas\Diactoros\Response;
+use Lcobucci\JWT\Configuration;
 use PHPUnit\Framework\TestCase;
 use Vonage\Client as VonageClient;
 use VonageTest\Psr7AssertionTrait;
@@ -17,6 +18,7 @@ use Vonage\Video\Archive\ArchiveConfig;
 use Vonage\Video\Archive\ArchiveMode;
 use Vonage\Video\Entity\IterableAPICollection;
 use Vonage\Video\MediaMode;
+use Vonage\Video\Role;
 
 class ClientTest extends TestCase
 {
@@ -52,7 +54,7 @@ class ClientTest extends TestCase
         $this->vonageClient = $this->prophesize(VonageClient::class);
         $this->vonageClient->getRestUrl()->willReturn('https://rest.nexmo.com');
         $this->vonageClient->getApiUrl()->willReturn('https://api.nexmo.com');
-        $this->vonageClient->getCredentials()->willReturn(new Keypair('abcd', $this->applicationId));
+        $this->vonageClient->getCredentials()->willReturn(new Keypair(file_get_contents(__DIR__ . '/files/private.test.key'), $this->applicationId));
 
         $this->apiResource = new APIResource();
         $this->apiResource
@@ -274,6 +276,27 @@ class ClientTest extends TestCase
             $this->assertSame($expected['items'][$key]['url'], $archive->getUrl());
             $key++;
         }
+    }
+
+    public function testCanGenerateBasicClientToken()
+    {
+        $token = $this->client->generateClientToken('abcd');
+        $parser = Configuration::forUnsecuredSigner()->parser();
+        $claims = $parser->parse($token)->claims();
+        $this->assertEquals($this->applicationId, $claims->get('application_id'));
+        $this->assertEquals('session.connect', $claims->get('scope'));
+        $this->assertEquals('abcd', $claims->get('session_id'));
+    }
+
+    public function testCanGenerateClientTokenWithOptions()
+    {
+        $token = $this->client->generateClientToken('abcd', ['role' => Role::MODERATOR]);
+        $parser = Configuration::forUnsecuredSigner()->parser();
+        $claims = $parser->parse($token)->claims();
+        $this->assertEquals($this->applicationId, $claims->get('application_id'));
+        $this->assertEquals('session.connect', $claims->get('scope'));
+        $this->assertEquals('abcd', $claims->get('session_id'));
+        $this->assertEquals(Role::MODERATOR, $claims->get('role'));
     }
 
     protected function getResponse(string $type = 'success', int $status = 200): Response

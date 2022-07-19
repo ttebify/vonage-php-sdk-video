@@ -85,12 +85,18 @@ class Client implements APIClient
         throw new \RuntimeException('Requested auth type not found');
     }
 
-    public function generateClientToken(string $sessionId): string
+    /**
+     * @param array<string, mixed> $options 
+     */
+    public function generateClientToken(string $sessionId, array $options = []): string
     {
-        $token = TokenGenerator::factory($this->credentials->application, $this->credentials->key, [
+        $defaults = [
             'scope' => 'session.connect',
             'session_id' => $sessionId,
-        ]);
+        ];
+
+        $options = array_merge($defaults, $options);
+        $token = TokenGenerator::factory($this->credentials->application, $this->credentials->key, $options);
 
         return $token;
     }
