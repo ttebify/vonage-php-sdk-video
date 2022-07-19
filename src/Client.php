@@ -138,10 +138,10 @@ class Client implements APIClient
         );
     }
 
-    public function startArchive(ArchiveConfig $data): Archive
+    public function startArchive(ArchiveConfig $archiveConfig): Archive
     {
         $response = $this->apiResource->create(
-            $data->toArray(),
+            $archiveConfig->toArray(),
             '/v2/project/' . $this->credentials->application . '/archive'
         );
 
