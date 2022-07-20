@@ -299,6 +299,78 @@ class ClientTest extends TestCase
         $this->assertEquals(Role::MODERATOR, $claims->get('role'));
     }
 
+    public function testCanMuteAStream()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+        $streamId = '1234';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId, $streamId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/stream/' . $streamId . '/mute', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('project-details'));
+
+        $response = $this->client->forceMuteStream('abcd', '1234');
+        $this->assertEquals('12312', $response->getId());
+    }
+
+    public function testCanMuteAllStreams()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+        $excludedStreamIds = [];
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId, $excludedStreamIds) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/mute', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+            $this->assertRequestJsonBodyContains('active', true, $request);
+            $this->assertRequestJsonBodyContains('excludedStreamIds', $excludedStreamIds, $request);
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('project-details'));
+
+        $response = $this->client->forceMuteAll('abcd');
+        $this->assertEquals('12312', $response->getId());
+    }
+
+    public function testCanMuteMostStreams()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+        $excludedStreamIds = ['1234'];
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId, $excludedStreamIds) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/mute', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+            $this->assertRequestJsonBodyContains('active', true, $request);
+            $this->assertRequestJsonBodyContains('excludedStreamIds', $excludedStreamIds, $request);
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('project-details'));
+
+        $response = $this->client->forceMuteAll('abcd', $excludedStreamIds);
+        $this->assertEquals('12312', $response->getId());
+    }
+
+    public function testCanDisableMute()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/mute', $request->getUri()->getPath());
+            $this->assertSame('POST', $request->getMethod());
+            $this->assertRequestJsonBodyContains('active', false, $request);
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('project-details'));
+
+        $response = $this->client->disableForceMute('abcd');
+        $this->assertEquals('12312', $response->getId());
+    }
+
     protected function getResponse(string $type = 'success', int $status = 200): Response
     {
         return new Response(fopen(__DIR__ . '/responses/' . $type . '.json', 'rb'), $status);

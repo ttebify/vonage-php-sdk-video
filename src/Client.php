@@ -3,17 +3,20 @@ declare(strict_types=1);
 
 namespace Vonage\Video;
 
+use Psr\Http\Client\ClientExceptionInterface;
 use Vonage\Client\APIClient;
 use Vonage\Client\APIResource;
-use Vonage\JWT\TokenGenerator;
-use Vonage\Video\Archive\Archive;
-use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Credentials\Container;
-use Vonage\Entity\IterableAPICollection;
+use Vonage\Client\Credentials\CredentialsInterface;
+use Vonage\Client\Credentials\Keypair;
+use Vonage\Client\Exception\Exception;
 use Vonage\Entity\Filter\FilterInterface;
 use Vonage\Entity\Hydrator\ConstructorHydrator;
-use Vonage\Client\Credentials\CredentialsInterface;
+use Vonage\Entity\IterableAPICollection;
+use Vonage\JWT\TokenGenerator;
+use Vonage\Video\Archive\Archive;
 use Vonage\Video\Archive\ArchiveConfig;
+use Vonage\Video\ProjectDetails;
 
 class Client implements APIClient
 {
@@ -68,6 +71,20 @@ class Client implements APIClient
         return $session;
     }
 
+    /**
+     * @param string[] $excludedStreams
+     */
+    public function disableForceMute(string $sessionId): ProjectDetails
+    {
+        $response = $this->apiResource->create(
+            [
+                'active' => false,
+            ],
+            'v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/mute'
+        );
+        return new ProjectDetails($response);
+    }
+
     protected function extractCredentials(string $class, CredentialsInterface $credentials): CredentialsInterface
     {
         if ($credentials instanceof $class) {
@@ -82,6 +99,27 @@ class Client implements APIClient
         }
 
         throw new \RuntimeException('Requested auth type not found');
+    }
+
+    /**
+     * @param string[] $excludedStreams
+     */
+    public function forceMuteAll(string $sessionId, array $excludedStreamIds = []): ProjectDetails
+    {
+        $response = $this->apiResource->create(
+            [
+                'active' => true,
+                'excludedStreamIds' => $excludedStreamIds
+            ],
+            'v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/mute'
+        );
+        return new ProjectDetails($response);
+    }
+
+    public function forceMuteStream(string $sessionId, string $streamId): ProjectDetails
+    {
+        $response = $this->apiResource->create([], 'v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/stream/' . $streamId . '/mute');
+        return new ProjectDetails($response);
     }
 
     /**
