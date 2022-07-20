@@ -72,6 +72,11 @@ class Client implements APIClient
         return $session;
     }
 
+    public function deleteArchive(string $archiveId): void
+    {
+        $this->apiResource->delete('v2/project/' . $this->credentials->application . '/archive/' . $archiveId);
+    }
+
     /**
      * @param string[] $excludedStreams
      */

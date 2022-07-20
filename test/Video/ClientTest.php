@@ -438,6 +438,20 @@ class ClientTest extends TestCase
         $this->client->updateArchiveLayout($archiveId, $layout);
     }
 
+    public function testCanDeleteAnArchive()
+    {
+        $applicationId = $this->applicationId;
+        $archiveId = 'abcd';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $archiveId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive/' . $archiveId, $request->getUri()->getPath());
+            $this->assertSame('DELETE', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('empty', 204));
+        $this->client->deleteArchive($archiveId);
+    }
+
     protected function getResponse(string $type = 'success', int $status = 200): Response
     {
         return new Response(fopen(__DIR__ . '/responses/' . $type . '.json', 'rb'), $status);
