@@ -15,6 +15,7 @@ use Psr\Http\Message\RequestInterface;
 use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Exception\Request;
 use Vonage\Video\Archive\ArchiveConfig;
+use Vonage\Video\Archive\ArchiveLayout;
 use Vonage\Video\Archive\ArchiveMode;
 use Vonage\Video\Entity\IterableAPICollection;
 use Vonage\Video\MediaMode;
@@ -369,6 +370,72 @@ class ClientTest extends TestCase
 
         $response = $this->client->disableForceMute('abcd');
         $this->assertEquals('12312', $response->getId());
+    }
+
+    public function testCanDisconnectAClient()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+        $connectionId = '123';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId, $connectionId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/connection/' . $connectionId, $request->getUri()->getPath());
+            $this->assertSame('DELETE', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('empty', 204));
+        $this->client->disconnectClient($sessionId, $connectionId);
+    }
+
+    public function testCanUpdateArchiveLayout()
+    {
+        $applicationId = $this->applicationId;
+        $archiveId = 'abcd';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $archiveId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive/' . $archiveId . '/layout', $request->getUri()->getPath());
+            $this->assertSame('PUT', $request->getMethod());
+            $this->assertRequestJsonBodyContains('type', 'bestFit', $request);
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('empty', 204));
+        $this->client->updateArchiveLayout($archiveId, ArchiveLayout::getBestFit());
+    }
+
+    public function testCanCreateCustomLayout()
+    {
+        $applicationId = $this->applicationId;
+        $archiveId = 'abcd';
+        $stylesheet = 'div=color:red';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $archiveId, $stylesheet) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive/' . $archiveId . '/layout', $request->getUri()->getPath());
+            $this->assertSame('PUT', $request->getMethod());
+            $this->assertRequestJsonBodyContains('type', 'custom', $request);
+            $this->assertRequestJsonBodyContains('stylesheet', $stylesheet, $request);
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('empty', 204));
+        $this->client->updateArchiveLayout($archiveId, ArchiveLayout::createCustom($stylesheet));
+    }
+
+    public function testCanSetScreenshareLayoutType()
+    {
+        $applicationId = $this->applicationId;
+        $archiveId = 'abcd';
+        $stylesheet = 'div=color:red';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $archiveId, $stylesheet) {
+            $this->assertSame('/v2/project/' . $applicationId . '/archive/' . $archiveId . '/layout', $request->getUri()->getPath());
+            $this->assertSame('PUT', $request->getMethod());
+            $this->assertRequestJsonBodyContains('type', 'bestFit', $request);
+            $this->assertRequestJsonBodyContains('screenshareType', 'pip', $request);
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('empty', 204));
+
+        $layout = ArchiveLayout::getBestFit()->setScreenshareType(ArchiveLayout::LAYOUT_PIP);
+        $this->client->updateArchiveLayout($archiveId, $layout);
     }
 
     protected function getResponse(string $type = 'success', int $status = 200): Response

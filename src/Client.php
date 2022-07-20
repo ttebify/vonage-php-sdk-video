@@ -16,6 +16,7 @@ use Vonage\Entity\IterableAPICollection;
 use Vonage\JWT\TokenGenerator;
 use Vonage\Video\Archive\Archive;
 use Vonage\Video\Archive\ArchiveConfig;
+use Vonage\Video\Archive\ArchiveLayout;
 use Vonage\Video\ProjectDetails;
 
 class Client implements APIClient
@@ -83,6 +84,11 @@ class Client implements APIClient
             'v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/mute'
         );
         return new ProjectDetails($response);
+    }
+
+    public function disconnectClient(string $sessionId, string $connectionId): void
+    {
+        $this->apiResource->delete('v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/connection/' . $connectionId);
     }
 
     protected function extractCredentials(string $class, CredentialsInterface $credentials): CredentialsInterface
@@ -193,5 +199,13 @@ class Client implements APIClient
         );
 
         return new Archive($response);
+    }
+
+    public function updateArchiveLayout(string $archiveId, ArchiveLayout $layout): void
+    {
+        $this->apiResource->update(
+            '/v2/project/' . $this->credentials->application . '/archive/' . $archiveId . '/layout',
+            $layout->toArray(),
+        );
     }
 }
