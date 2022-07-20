@@ -1,0 +1,21 @@
+{
+    "count": 2,
+    "items": [
+        {
+            "id": "8b732909-0a06-46a2-8ea8-074e64d43422",
+            "videoType": "camera",
+            "name": "",
+            "layoutClassList": [
+                "full"
+            ]
+        },
+        {
+            "id": " 25806079-c6f8-4bf9-94f9-085ff8901728 ",
+            "videoType": "camera",
+            "name": "somename",
+            "layoutClassList": [
+                "full"
+            ]
+        }
+    ]
+}

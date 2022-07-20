@@ -156,6 +156,13 @@ class Client implements APIClient
         return new Archive($response);
     }
 
+    public function getStream(string $sessionId, string $streamId)
+    {
+        $response = $this->apiResource->get('v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/stream/' . $streamId);
+
+        return new Stream($response);
+    }
+
     public function listArchives(FilterInterface $filter = null): IterableAPICollection
     {
         $response = $this->apiResource->search(
@@ -166,6 +173,23 @@ class Client implements APIClient
 
         $hydrator = new ConstructorHydrator();
         $hydrator->setPrototype(Archive::class);
+        $response->setHydrator($hydrator);
+        $response->setNaiveCount(true);
+        $response->getApiResource()->setCollectionName('items');
+
+        return $response;
+    }
+
+    public function listStreams(string $sessionId): IterableAPICollection
+    {
+        $response = $this->apiResource->search(
+            null,
+            '/v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/stream',
+        );
+        $response->getApiResource()->setBaseUri('/v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/stream');
+
+        $hydrator = new ConstructorHydrator();
+        $hydrator->setPrototype(Stream::class);
         $response->setHydrator($hydrator);
         $response->setNaiveCount(true);
         $response->getApiResource()->setCollectionName('items');

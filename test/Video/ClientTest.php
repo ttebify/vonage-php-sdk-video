@@ -452,6 +452,42 @@ class ClientTest extends TestCase
         $this->client->deleteArchive($archiveId);
     }
 
+    public function testCanGetStream()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+        $streamId = '123';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId, $streamId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/stream/' . $streamId, $request->getUri()->getPath());
+            $this->assertSame('GET', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('get-stream', 200));
+        $stream = $this->client->getStream($sessionId, $streamId);
+
+        $this->assertEquals("8b732909-0a06-46a2-8ea8-074e64d43422", $stream->getId());
+        $this->assertEquals("camera", $stream->getVideoType());
+        $this->assertEquals("", $stream->getName());
+        $this->assertEquals(['full'], $stream->getLayoutClassList());
+    }
+
+    public function testCanListStreams()
+    {
+        $applicationId = $this->applicationId;
+        $sessionId = 'abcd';
+
+        $this->vonageClient->send(Argument::that(function (RequestInterface $request) use ($applicationId, $sessionId) {
+            $this->assertSame('/v2/project/' . $applicationId . '/session/' . $sessionId . '/stream', $request->getUri()->getPath());
+            $this->assertSame('GET', $request->getMethod());
+
+            return true;
+        }))->shouldBeCalledTimes(1)->willReturn($this->getResponse('list-streams', 200));
+        $response = $this->client->listStreams($sessionId);
+
+        $this->assertEquals(2, $response->count());
+    }
+
     protected function getResponse(string $type = 'success', int $status = 200): Response
     {
         return new Response(fopen(__DIR__ . '/responses/' . $type . '.json', 'rb'), $status);
