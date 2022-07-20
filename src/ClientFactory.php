@@ -12,7 +12,7 @@ class ClientFactory
 {
     public function __invoke(MapFactory $containerInterface): Client
     {
-        $baseUrl = getenv('VONAGE_VIDEO_API_SERVER_URL') ?: 'https://anvil-tbdev.opentok.com';
+        $baseUrl = getenv('VONAGE_VIDEO_API_SERVER_URL') ?: 'https://video.api.vonage.com';
         /** @var APIResource $apiResource */
         $apiResource = $containerInterface->make(APIResource::class);
         $apiResource->setBaseUrl($baseUrl); 
