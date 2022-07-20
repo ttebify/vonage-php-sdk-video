@@ -7,7 +7,6 @@ use Vonage\Client\APIClient;
 use Vonage\Client\APIResource;
 use Vonage\JWT\TokenGenerator;
 use Vonage\Video\Archive\Archive;
-use Vonage\Video\Archive\ArchiveMode;
 use Vonage\Client\Credentials\Keypair;
 use Vonage\Client\Credentials\Container;
 use Vonage\Entity\IterableAPICollection;
@@ -125,7 +124,7 @@ class Client implements APIClient
         return $response;
     }
 
-    public function sendSignal(string $sessionId, string $type, $data, string $connectionId = null): void
+    public function sendSignal(string $sessionId, string $type, string $data, string $connectionId = null): void
     {
         $url = '/v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/signal';
         if ($connectionId) {
