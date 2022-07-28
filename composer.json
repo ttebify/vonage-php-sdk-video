@@ -23,7 +23,7 @@
             "VonageTest\\": "test/"
         }
     },
-    "license": "Apache 2.0",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "Chris Tankersley",
