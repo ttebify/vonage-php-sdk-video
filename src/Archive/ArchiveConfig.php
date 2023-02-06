@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Vonage\Video\Archive;
 
 use Vonage\Video\Layout;
+use Vonage\Video\Resolution;
 
 class ArchiveConfig implements \JsonSerializable
 {
@@ -16,26 +17,6 @@ class ArchiveConfig implements \JsonSerializable
      * @var string
      */
     const OUTPUT_MODE_INDIVIDUAL = "individual";
-
-    /**
-     * @var string
-     */
-    const RESOLUTION_LANDSCAPE_SD = "640x480";
-
-    /**
-     * @var string
-     */
-    const RESOLUTION_LANDSCAPE_HD = "1280x720";
-
-    /**
-     * @var string
-     */
-    const RESOLUTION_PORTRAIT_SD = "480x640";
-
-    /**
-     * @var string
-     */
-    const RESOLUTION_PORTRAIT_HD = "720x1280";
 
     /**
      * @var string
@@ -141,16 +122,7 @@ class ArchiveConfig implements \JsonSerializable
 
     public function setResolution(string $resolution): self
     {
-        $whitelist = [
-            static::RESOLUTION_LANDSCAPE_HD,
-            static::RESOLUTION_LANDSCAPE_SD,
-            static::RESOLUTION_PORTRAIT_HD,
-            static::RESOLUTION_PORTRAIT_SD,
-        ];
-
-        if (!in_array($resolution, $whitelist)) {
-            throw new \InvalidArgumentException('Invalid resolution specified for archive');
-        }
+        Resolution::isValid($resolution);
 
         $this->resolution = $resolution;
 
@@ -169,7 +141,7 @@ class ArchiveConfig implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->toArray();
     }

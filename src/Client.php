@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace Vonage\Video;
 
-use Psr\Http\Client\ClientExceptionInterface;
 use Vonage\Client\APIClient;
 use Vonage\Client\APIResource;
+use Vonage\Video\Archive\ArchiveMode;
+use Vonage\Video\Broadcast\Broadcast;
 use Vonage\Client\Credentials\Container;
-use Vonage\Client\Credentials\CredentialsInterface;
 use Vonage\Client\Credentials\Keypair;
-use Vonage\Client\Exception\Exception;
 use Vonage\Entity\Filter\FilterInterface;
+use Vonage\Video\Broadcast\BroadcastConfig;
 use Vonage\Entity\Hydrator\ConstructorHydrator;
 use Vonage\Entity\IterableAPICollection;
 use Vonage\JWT\TokenGenerator;
@@ -18,6 +18,7 @@ use Vonage\Video\Archive\Archive;
 use Vonage\Video\Archive\ArchiveConfig;
 use Vonage\Video\Archive\ArchiveLayout;
 use Vonage\Video\ProjectDetails;
+use Vonage\Client\Credentials\CredentialsInterface;
 
 class Client implements APIClient
 {
@@ -40,6 +41,26 @@ class Client implements APIClient
     public function getAPIResource(): APIResource
     {
         return $this->apiResource;
+    }
+
+    public function addStreamToBroadcast(string $broadcastId, string $streamId, bool $hasVideo = true, bool $hasAudio = true): void
+    {
+        $this->apiResource->partiallyUpdate(
+            'v2/project/' . $this->credentials->application . '/broadcast/' . $broadcastId . '/streams',
+            [
+                'addStream' => $streamId,
+                'hasAudio' => $hasAudio,
+                'hasVideo' => $hasVideo,
+            ],
+        );
+    }
+
+    public function changeBroadcastLayout(string $broadcastId, Layout $layout): void
+    {
+        $this->apiResource->create(
+            $layout->toArray(),
+            'v2/project/' . $this->credentials->application . '/broadcast/' . $broadcastId . '/layout',
+        );
     }
 
     public function createSession(?SessionOptions $options = null): Session
@@ -162,6 +183,32 @@ class Client implements APIClient
 
         return new Stream($response);
     }
+    
+    public function getBroadcast(string $broadcastId): Broadcast
+    {
+        $response = $this->apiResource->get(
+            'v2/project/' . $this->credentials->application . '/broadcast/' . $broadcastId
+        );
+
+        return new Broadcast($response);
+    }
+
+    /**
+     * @return array{id: string, connectionId: string, streamId: string}
+     */
+    public function initiateOutboundSIPCall(string $sessionId, string $token, OutboundSIPConfig $config): array
+    {
+        $config = $config->toArray();
+        $config['sessionId'] = $sessionId;
+        $config['token'] = $token;
+
+        $response = $this->getAPIResource()->create(
+            $config,
+            'v2/project/' . $this->credentials->application . '/dial'
+        );
+        
+        return $response;
+    }
 
     public function listArchives(FilterInterface $filter = null): IterableAPICollection
     {
@@ -192,9 +239,45 @@ class Client implements APIClient
         $hydrator->setPrototype(Stream::class);
         $response->setHydrator($hydrator);
         $response->setNaiveCount(true);
+
+        return $response;
+    }
+    
+    public function listBroadcasts(FilterInterface $filter = null): IterableAPICollection
+    {
+        $response = $this->apiResource->search(
+            $filter,
+            '/v2/project/' . $this->credentials->application . '/broadcast'
+        );
+        $response->getApiResource()->setBaseUri('/v2/project/' . $this->credentials->application . '/broadcast');
+
+        $hydrator = new ConstructorHydrator();
+        $hydrator->setPrototype(Broadcast::class);
+        $response->setHydrator($hydrator);
         $response->getApiResource()->setCollectionName('items');
 
         return $response;
+    }
+
+    public function playDTMFIntoCall(string $sessionId, string $digits, ?string $connectionId): void
+    {
+        $uri = 'v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/play-dtmf';
+        if ($connectionId) {
+            $uri = 'v2/project/' . $this->credentials->application . '/session/' . $sessionId . '/connection/' . $connectionId .'/play-dtmf';
+        }
+
+        $this->getAPIResource()->create(
+            ['digits' => $digits],
+            $uri
+        );        
+    }
+
+    public function removeStreamFromBroadcast(string $broadcastId, string $streamId): void
+    {
+        $this->apiResource->update(
+            'v2/project/' . $this->credentials->application . '/broadcast/' . $broadcastId . '/streams',
+            ['removeStream' => $streamId],
+        );
     }
 
     public function sendSignal(string $sessionId, string $type, string $data, string $connectionId = null): void
@@ -220,6 +303,16 @@ class Client implements APIClient
         return new Archive($response);
     }
 
+    public function startBroadcast(BroadcastConfig $config)
+    {
+        $response = $this->apiResource->create(
+            $config->toArray(),
+            '/v2/project/' . $this->credentials->application . '/broadcast'
+        );
+
+        return new Broadcast($response);
+    }
+
     public function stopArchive(string $archiveId): Archive
     {
         $response = $this->apiResource->create(
@@ -236,5 +329,15 @@ class Client implements APIClient
             '/v2/project/' . $this->credentials->application . '/archive/' . $archiveId . '/layout',
             $layout->toArray(),
         );
+    }
+
+    public function stopBroadcast(string $broadcastId): Broadcast
+    {
+        $response = $this->apiResource->create(
+            [],
+            '/v2/project/' . $this->credentials->application . '/broadcast/' . $broadcastId . '/stop'
+        );
+
+        return new Broadcast($response);
     }
 }

@@ -43,7 +43,7 @@ class IterableAPICollection extends EntityIterableAPICollection
 
         $cacheKey = md5($requestUri);
         if (array_key_exists($cacheKey, $this->cache)) {
-            $this->page = $this->cache[$cacheKey];
+            $this->pageData = $this->cache[$cacheKey];
 
             return;
         }
@@ -58,10 +58,10 @@ class IterableAPICollection extends EntityIterableAPICollection
         $body = $this->response->getBody()->getContents();
         $json = json_decode($body, true);
         $this->cache[md5($requestUri)] = $json;
-        $this->page = $json;
+        $this->pageData = $json;
 
-        if ($this->page) {
-            $this->offset += count($this->page['items']);
+        if ($this->pageData) {
+            $this->offset += count($this->pageData['items']);
             $filterQuery = $this->filter->getQuery();
             $filterQuery['offset'] = $this->offset;
             $filterQuery['count'] = $this->count;

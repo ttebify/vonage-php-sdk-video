@@ -1,0 +1,46 @@
+{
+    "count":2,
+    "items":[
+      {
+        "id":"80abaf0d-25a3-4efc-968f-6268d620668d",
+        "sessionId":"1_MX4yNzA4NjYxMn5-MTU0NzA4MDUyMTEzNn5sOXU5ZnlWYXplRnZGblV4RUo3dXJpZk1-fg",
+        "multiBroadcastTag": "tag_you_provided",
+        "applicationId": "d5e57267-1bd2-4d76-aa53-c1c1542efc14",
+        "createdAt":1547080532099,
+        "broadcastUrls":{
+          "hls":"https://cdn.tokbox.com/34355/34355_80abaf0d-25a3-4efc-968f-6268d620668d.smil/playlist.m3u8"
+        },
+        "updatedAt":1547080532099,
+        "status":"started",
+        "maxDuration":7200,
+        "maxBitrate": 2000000,
+        "hasAudio": true,
+        "hasVideo": true,
+        "resolution":"640x480",
+        "streamMode":"manual",
+        "partnerId":27086612,
+        "settings": {"hls": {"lowLatency": false}},
+        "event":"broadcast"
+      },
+      {
+        "id":"d95f6496-df6e-4f49-86d6-832e00303602",
+        "sessionId":"2_MX4yNzA4NjYxMn5-MTU0NzA4MDUwMDc2MH5STWRiSE1jZjVoV3lBQU9nN2JuNElUV3V-fg",
+        "applicationId": "d5e57267-1bd2-4d76-aa53-c1c1542efc14",
+        "createdAt":1547080511760,
+        "broadcastUrls":{
+          "hls":"https://cdn.tokbox.com/34352/34352_d95f6496-df6e-4f49-86d6-832e00303602.smil/playlist.m3u8"
+        },
+        "updatedAt":1547080511760,
+        "status":"started",
+        "maxDuration":7200,
+        "maxBitrate": 2000000,
+        "hasAudio": true,
+        "hasVideo": true,
+        "resolution":"640x480",
+        "streamMode":"manual",
+        "partnerId":27086612,
+        "settings": {"hls": {"lowLatency": true}},
+        "event":"broadcast"
+      }
+    ]
+  }
