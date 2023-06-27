@@ -162,6 +162,12 @@ class Client implements APIClient
         $defaults = [
             'scope' => 'session.connect',
             'session_id' => $sessionId,
+            'sub' => 'video',
+            'acl' => [
+                'paths' => [
+                    '/session/**' => (object) [],
+                ],
+            ],
         ];
 
         $options = array_merge($defaults, $options);

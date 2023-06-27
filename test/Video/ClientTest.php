@@ -309,6 +309,7 @@ class ClientTest extends TestCase
         $this->assertEquals($this->applicationId, $claims->get('application_id'));
         $this->assertEquals('session.connect', $claims->get('scope'));
         $this->assertEquals('abcd', $claims->get('session_id'));
+        $this->assertEquals('video', $claims->get('sub'));
     }
 
     public function testCanGenerateClientTokenWithOptions()
