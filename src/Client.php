@@ -5,7 +5,6 @@ namespace Vonage\Video;
 
 use Vonage\Client\APIClient;
 use Vonage\Client\APIResource;
-use Vonage\Video\Archive\ArchiveMode;
 use Vonage\Video\Broadcast\Broadcast;
 use Vonage\Client\Credentials\Container;
 use Vonage\Client\Credentials\Keypair;
@@ -17,7 +16,6 @@ use Vonage\JWT\TokenGenerator;
 use Vonage\Video\Archive\Archive;
 use Vonage\Video\Archive\ArchiveConfig;
 use Vonage\Video\Archive\ArchiveLayout;
-use Vonage\Video\ProjectDetails;
 use Vonage\Client\Credentials\CredentialsInterface;
 
 class Client implements APIClient

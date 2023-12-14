@@ -58,8 +58,7 @@ use Vonage\Video\ClientFactory;
 
 $credentials = new Keypair('private-key-string', 'application-id');
 $client = new Client($credentials);
-$client->getFactory()->set('video', new ClientFactory());
-$vonageVideoClient = $client->get(Client::class);
+$vonageVideoClient = $client->video();
 ```
 
 For testing purposes you can change the API URL that the client makes requests to
@@ -96,14 +95,14 @@ $token = $client->video()->generateClientToken();
 
 The following is a list of Vonage Video APIs and whether the SDK provides support for them:
 
-| API   |  Supported?
-|----------|:-------------:|
-| Session Creation | ✅ |
-| Signaling | ✅ |
-| Force Muting | ✅ |
-| Archiving | ✅ |
-| Custom S3/Azure buckets | ❌ |
-| SIP Interconnect | ❌ |
-| Live Streaming Broadcasts | ❌ |
-| Experience Composer | ❌ |
-| Account Management | ❌ |
+| API                       | Supported? |
+|---------------------------|:----------:|
+| Session Creation          |     ✅      |
+| Signaling                 |     ✅      |
+| Force Muting              |     ✅      |
+| Archiving                 |     ✅      |
+| Custom S3/Azure buckets   |     ❌      |
+| SIP Interconnect          |     ❌      |
+| Live Streaming Broadcasts |     ❌      |
+| Experience Composer       |     ❌      |
+| Account Management        |     ❌      |
