@@ -8,7 +8,7 @@
 
 ![The Vonage logo](./vonage_logo.png)
 
-*This library requires a minimum PHP version of 7.4*
+*This library requires a minimum PHP version of 8.0*
 
 This is a PHP client library for the Vonage Video API. It extends the
 [Vonage PHP library](https://raw.githubusercontent.com/Vonage/vonage-php-sdk-core). To use this, you'll need a Vonage account. Sign up [for free at 
@@ -22,7 +22,7 @@ nexmo.com][signup].
 ## Installation
 -----
 
-To use the client library you'll need to have [created a Vonage account][signup]. 
+To use the client library you'll need to have [created a Vonage account][signup].
 
 To install the PHP client library to your project, we recommend using [Composer](https://getcomposer.org/).
 
@@ -30,11 +30,9 @@ To install the PHP client library to your project, we recommend using [Composer]
 composer require vonage/video
 ```
 
-> Note that if you are not already using our SDK, will install the wrapper library version of our core SDK that includes an HTTP client -and- the core library. You can
-> install just the core SDK library directly from Composer if you wish by first installing `vonage/client-core`, with the ability to choose the HTTP client your project
-> uses.
-
-> You don't need to clone this repository to use this library in your own projects. Use Composer to install it from Packagist.
+> PLEASE NOTE that this package is not designed to be used as a standalone. It requires the `vonage/client-core` package to work, but you
+> might not have a PSR-11-compliant HTTP Client installed which is required for this. In order to get around this, install
+> `vonage/client` first, then `vonage/video`. This will cover all requirements of the package.
 
 If you're new to Composer, here are some resources that you may find useful:
 
