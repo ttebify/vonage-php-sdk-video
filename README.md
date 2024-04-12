@@ -2,7 +2,7 @@
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 [![Build Status](https://github.com/vonage/vonage-php-sdk-videos/workflows/build/badge.svg)](https://github.com/Vonage/vonage-php-sdk-core/actions?query=workflow%3Abuild)
-[![Latest Stable Version](https://poser.pugx.org/vonage/video/v/stable)](https://packagist.org/packages/vonage/client)
+[![Latest Stable Version](https://poser.pugx.org/vonage/video/v/stable)](https://packagist.org/packages/vonage/video)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![codecov](https://codecov.io/gh/Vonage/vonage-php-sdk-video/branch/0.x/graph/badge.svg)](https://codecov.io/gh/vonage/vonage-php-sdk-core)
 
@@ -11,13 +11,13 @@
 *This library requires a minimum PHP version of 8.0*
 
 This is a PHP client library for the Vonage Video API. It extends the
-[Vonage PHP library](https://raw.githubusercontent.com/Vonage/vonage-php-sdk-core). To use this, you'll need a Vonage account. Sign up [for free at 
+[Vonage PHP library](https://raw.githubusercontent.com/Vonage/vonage-php-sdk-core). To use this, you'll need a Vonage account. Sign up [for free at
 nexmo.com][signup].
 
  * [Installation](#installation)
  * [Usage](#usage)
  * [Examples](#examples)
- * [Contributing](#contributing) 
+ * [Contributing](#contributing)
 
 ## Installation
 -----
@@ -32,7 +32,7 @@ composer require vonage/video
 
 > PLEASE NOTE that this package is not designed to be used as a standalone. It requires the `vonage/client-core` package to work, but you
 > might not have a PSR-11-compliant HTTP Client installed which is required for this. In order to get around this, install
-> `vonage/client` first, then `vonage/video`. This will cover all requirements of the package.
+> `vonage/client-core` first, then `vonage/video`. This will cover all requirements of the package.
 
 If you're new to Composer, here are some resources that you may find useful:
 
@@ -72,7 +72,7 @@ $client = new Client($credentials. $options);
 ### Creating a new Session
 ```php
 $session = $client->video()->createSession();
-echo $session->getId();
+echo $session->getSessionId();
 ```
 
 ### Create a new session with an Archive
@@ -81,12 +81,12 @@ use Vonage\Video;
 use Vonage\Video\Archive\ArchiveMode;
 
 $session = $client->video()->createSession(new SessionOptions(['archiveMode' => ArchiveMode::ALWAYS]));
-echo $session->getId();
+echo $session->getSessionId();
 ```
 
 ### Generating a Client Token
 ```php
-$token = $client->video()->generateClientToken();
+$token = $client->video()->generateClientToken($session->getSessionId());
 ```
 
 ## Supported APIs
